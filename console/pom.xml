@@ -30,7 +30,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -44,12 +44,12 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>nacos-naming</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>nacos-istio</artifactId>
         </dependency>
-        
+
         <!-- log -->
         <!-- log4j通过slf4j来代理 -->
         <dependency>
@@ -77,7 +77,7 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
     </dependencies>
-    
+
     <build>
         <resources>
             <resource>
@@ -88,7 +88,7 @@
             </resource>
         </resources>
     </build>
-    
+
     <reporting>
         <plugins>
             <plugin>
@@ -97,7 +97,7 @@
             </plugin>
         </plugins>
     </reporting>
-    
+
     <profiles>
         <profile>
             <id>release-nacos</id>
