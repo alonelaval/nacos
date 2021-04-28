@@ -48,122 +48,139 @@ import java.util.Map;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public class EnvUtil {
-    
+
     public static final String STANDALONE_MODE_ALONE = "standalone";
-    
+
     public static final String STANDALONE_MODE_CLUSTER = "cluster";
-    
+
     public static final String FUNCTION_MODE_CONFIG = "config";
-    
+
     public static final String FUNCTION_MODE_NAMING = "naming";
-    
+
+    public static final String DATABASE_MYSQL = "mysql";
+
+    public static final String DATABASE_DAMENG8 = "dameng8";
+
+    public static final String DATABASE_KINGBASE8 = "kingbase8";
+
     /**
      * The key of nacos home.
      */
     public static final String NACOS_HOME_KEY = "nacos.home";
-    
+
     private static String localAddress = "";
-    
+
     private static int port = -1;
-    
+
     private static Boolean isStandalone = null;
-    
+
     private static String functionModeType = null;
-    
+
     private static String contextPath = null;
-    
+
     @JustForTest
     private static String confPath = "";
-    
+
     @JustForTest
     private static String nacosHomePath = null;
-    
+
     private static final OperatingSystemMXBean OPERATING_SYSTEM_MX_BEAN = (com.sun.management.OperatingSystemMXBean) ManagementFactory
             .getOperatingSystemMXBean();
-    
+
     private static ConfigurableEnvironment environment;
-    
+
     public static ConfigurableEnvironment getEnvironment() {
         return environment;
     }
-    
+
     public static void setEnvironment(ConfigurableEnvironment environment) {
         EnvUtil.environment = environment;
     }
-    
+
     public static boolean containsProperty(String key) {
         return environment.containsProperty(key);
     }
-    
+
     public static String getProperty(String key) {
         return environment.getProperty(key);
     }
-    
+
     public static String getProperty(String key, String defaultValue) {
         return environment.getProperty(key, defaultValue);
     }
-    
+
     public static <T> T getProperty(String key, Class<T> targetType) {
         return environment.getProperty(key, targetType);
     }
-    
+
     public static <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
         return environment.getProperty(key, targetType, defaultValue);
     }
-    
+
     public static String getRequiredProperty(String key) throws IllegalStateException {
         return environment.getRequiredProperty(key);
     }
-    
+
     public static <T> T getRequiredProperty(String key, Class<T> targetType) throws IllegalStateException {
         return environment.getRequiredProperty(key, targetType);
     }
-    
+
     public static String resolvePlaceholders(String text) {
         return environment.resolvePlaceholders(text);
     }
-    
+
     public static String resolveRequiredPlaceholders(String text) throws IllegalArgumentException {
         return environment.resolveRequiredPlaceholders(text);
     }
-    
+
     public static List<String> getPropertyList(String key) {
         List<String> valueList = new ArrayList<>();
-        
+
         for (int i = 0; i < Integer.MAX_VALUE; i++) {
             String value = environment.getProperty(key + "[" + i + "]");
             if (org.apache.commons.lang3.StringUtils.isBlank(value)) {
                 break;
             }
-            
+
             valueList.add(value);
         }
-        
+
         return valueList;
     }
-    
+
+    public static boolean isExternalDB(String datasourcePlatform) {
+        switch (datasourcePlatform) {
+            case EnvUtil.DATABASE_MYSQL:
+            case EnvUtil.DATABASE_KINGBASE8:
+            case EnvUtil.DATABASE_DAMENG8:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public static String getLocalAddress() {
         if (StringUtils.isBlank(localAddress)) {
             localAddress = InetUtils.getSelfIP() + ":" + getPort();
         }
         return localAddress;
     }
-    
+
     public static void setLocalAddress(String localAddress) {
         EnvUtil.localAddress = localAddress;
     }
-    
+
     public static int getPort() {
         if (port == -1) {
             port = getProperty("server.port", Integer.class, 8848);
         }
         return port;
     }
-    
+
     public static void setPort(int port) {
         EnvUtil.port = port;
     }
-    
+
     public static String getContextPath() {
         if (Objects.isNull(contextPath)) {
             contextPath = getProperty(Constants.WEB_CONTEXT_PATH, "/nacos");
@@ -173,16 +190,16 @@ public class EnvUtil {
         }
         return contextPath;
     }
-    
+
     public static void setContextPath(String contextPath) {
         EnvUtil.contextPath = contextPath;
     }
-    
+
     @JustForTest
     public static void setIsStandalone(Boolean isStandalone) {
         EnvUtil.isStandalone = isStandalone;
     }
-    
+
     /**
      * Standalone mode or not.
      */
@@ -192,7 +209,7 @@ public class EnvUtil {
         }
         return isStandalone;
     }
-    
+
     /**
      * server function mode.
      */
@@ -202,16 +219,16 @@ public class EnvUtil {
         }
         return functionModeType;
     }
-    
+
     private static String nacosTmpDir;
-    
+
     public static String getNacosTmpDir() {
         if (StringUtils.isBlank(nacosTmpDir)) {
             nacosTmpDir = Paths.get(getNacosHome(), "data", "tmp").toString();
         }
         return nacosTmpDir;
     }
-    
+
     public static String getNacosHome() {
         if (StringUtils.isBlank(nacosHomePath)) {
             String nacosHome = System.getProperty(NACOS_HOME_KEY);
@@ -223,12 +240,12 @@ public class EnvUtil {
         // test-first
         return nacosHomePath;
     }
-    
+
     @JustForTest
     public static void setNacosHomePath(String nacosHomePath) {
         EnvUtil.nacosHomePath = nacosHomePath;
     }
-    
+
     public static List<String> getIPsBySystemEnv(String key) {
         String env = getSystemEnv(key);
         List<String> ips = new ArrayList<>();
@@ -237,26 +254,26 @@ public class EnvUtil {
         }
         return ips;
     }
-    
+
     public static String getSystemEnv(String key) {
         return System.getenv(key);
     }
-    
+
     public static float getLoad() {
         return (float) OPERATING_SYSTEM_MX_BEAN.getSystemLoadAverage();
     }
-    
+
     @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
     public static float getCPU() {
         return (float) OPERATING_SYSTEM_MX_BEAN.getSystemCpuLoad();
     }
-    
+
     public static float getMem() {
         return (float) (1
                 - (double) OPERATING_SYSTEM_MX_BEAN.getFreePhysicalMemorySize() / (double) OPERATING_SYSTEM_MX_BEAN
                 .getTotalPhysicalMemorySize());
     }
-    
+
     public static String getConfPath() {
         if (StringUtils.isNotBlank(EnvUtil.confPath)) {
             return EnvUtil.confPath;
@@ -264,15 +281,15 @@ public class EnvUtil {
         EnvUtil.confPath = Paths.get(getNacosHome(), "conf").toString();
         return confPath;
     }
-    
+
     public static void setConfPath(final String confPath) {
         EnvUtil.confPath = confPath;
     }
-    
+
     public static String getClusterConfFilePath() {
         return Paths.get(getNacosHome(), "conf", "cluster.conf").toString();
     }
-    
+
     /**
      * read cluster.conf to ip list.
      *
@@ -295,7 +312,7 @@ public class EnvUtil {
             return tmp;
         }
     }
-    
+
     /**
      * read file stream to ip list.
      *
@@ -329,11 +346,11 @@ public class EnvUtil {
         }
         return instanceList;
     }
-    
+
     public static void writeClusterConf(String content) throws IOException {
         DiskUtils.writeFile(new File(getClusterConfFilePath()), content.getBytes(StandardCharsets.UTF_8), false);
     }
-    
+
     public static String getMemberList() {
         String val = null;
         if (environment == null) {
@@ -346,7 +363,7 @@ public class EnvUtil {
         }
         return val;
     }
-    
+
     /**
      * load resource to map.
      *
@@ -357,14 +374,14 @@ public class EnvUtil {
     public static Map<String, ?> loadProperties(Resource resource) throws IOException {
         return new OriginTrackedPropertiesLoader(resource).load();
     }
-    
+
     private static final String FILE_PREFIX = "file:";
-    
+
     public static Resource getApplicationConfFileResource() {
         Resource customResource = getCustomFileResource();
         return customResource == null ? getDefaultResource() : customResource;
     }
-    
+
     private static Resource getCustomFileResource() {
         String path = getProperty("spring.config.additional-location");
         InputStream inputStream = null;
@@ -375,7 +392,7 @@ public class EnvUtil {
         }
         return null;
     }
-    
+
     private static Resource getRelativePathResource(String parentPath, String path) {
         try {
             InputStream inputStream = new FileInputStream(Paths.get(parentPath, path).toFile());
@@ -384,10 +401,10 @@ public class EnvUtil {
         }
         return null;
     }
-    
+
     private static Resource getDefaultResource() {
         InputStream inputStream = EnvUtil.class.getResourceAsStream("/application.properties");
         return new InputStreamResource(inputStream);
     }
-    
+
 }
