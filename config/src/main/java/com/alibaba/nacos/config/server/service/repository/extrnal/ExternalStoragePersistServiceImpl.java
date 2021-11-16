@@ -2087,7 +2087,12 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
                     return ps;
                 }
             }, keyHolder);
-            Number nu = keyHolder.getKey();
+            Number nu;
+            if (keyHolder.getKeys().size() > 1) {
+                nu = (Number) keyHolder.getKeys().get("id");
+            } else {
+                nu= keyHolder.getKey();
+            }
             if (nu == null) {
                 throw new IllegalArgumentException("insert config_info fail");
             }
