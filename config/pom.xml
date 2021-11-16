@@ -130,6 +130,21 @@
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
         </dependency>
+
+
+        <!--达梦数据库-->
+        <dependency>
+            <groupId>com.dameng</groupId>
+            <artifactId>Dm8JdbcDriver18</artifactId>
+            <version>8.1.0.157</version>
+        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>com.demeng</groupId>-->
+<!--            <artifactId>hibernate</artifactId>-->
+<!--            <version>5.3</version>-->
+<!--        </dependency>-->
+
     </dependencies>
     <build>
         <plugins>

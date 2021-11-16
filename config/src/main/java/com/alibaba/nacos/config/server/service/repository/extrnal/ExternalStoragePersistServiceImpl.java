@@ -978,16 +978,18 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
         final String configTags = configAdvanceInfo == null ? null : (String) configAdvanceInfo.get("config_tags");
         String sqlCount = "SELECT count(*) FROM config_info";
         String sql = "SELECT id,data_id,group_id,tenant_id,app_name,content,type FROM config_info";
-        StringBuilder where = new StringBuilder(" WHERE ");
+        StringBuilder where = new StringBuilder(" WHERE 1=1 ");
         List<String> paramList = new ArrayList<String>();
-        paramList.add(tenantTmp);
+
         if (StringUtils.isNotBlank(configTags)) {
             sqlCount = "SELECT count(*) FROM config_info  a LEFT JOIN config_tags_relation b ON a.id=b.id";
             sql = "SELECT a.id,a.data_id,a.group_id,a.tenant_id,a.app_name,a.content FROM config_info  a LEFT JOIN "
                     + "config_tags_relation b ON a.id=b.id";
-            
-            where.append(" a.tenant_id=? ");
-            
+
+            if (StringUtils.isNotBlank(tenant)){
+                where.append(" AND a.tenant_id=? ");
+                paramList.add(tenant);
+            }
             if (StringUtils.isNotBlank(dataId)) {
                 where.append(" AND a.data_id=? ");
                 paramList.add(dataId);
@@ -1012,7 +1014,10 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
             }
             where.append(") ");
         } else {
-            where.append(" tenant_id=? ");
+            if (StringUtils.isNotBlank(tenant)){
+                where.append(" AND tenant_id=? ");
+                paramList.add(tenant);
+            }
             if (StringUtils.isNotBlank(dataId)) {
                 where.append(" AND data_id=? ");
                 paramList.add(dataId);
@@ -1027,6 +1032,8 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
             }
         }
         try {
+            System.out.println(sqlCount+ where);
+            System.out.println(sql+ where);
             return helper.fetchPage(sqlCount + where, sql + where, paramList.toArray(), pageNo, pageSize,
                     CONFIG_INFO_ROW_MAPPER);
         } catch (CannotGetJdbcConnectionException e) {

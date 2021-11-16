@@ -13,17 +13,16 @@
 
 package com.alibaba.nacos.config.server.service.datasource;
 
+import com.alibaba.nacos.common.utils.StringUtils;
 import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariDataSource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.core.env.Environment;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import static com.alibaba.nacos.common.utils.CollectionUtils.getOrDefault;
 
@@ -33,35 +32,35 @@ import static com.alibaba.nacos.common.utils.CollectionUtils.getOrDefault;
  * @author Nacos
  */
 public class ExternalDataSourceProperties {
-    
+
     private static final String JDBC_DRIVER_NAME = "com.mysql.cj.jdbc.Driver";
-    
+
     private static final String TEST_QUERY = "SELECT 1";
-    
+
     private Integer num;
-    
+
     private List<String> url = new ArrayList<>();
-    
+
     private List<String> user = new ArrayList<>();
-    
+
     private List<String> password = new ArrayList<>();
-    
+
     public void setNum(Integer num) {
         this.num = num;
     }
-    
+
     public void setUrl(List<String> url) {
         this.url = url;
     }
-    
+
     public void setUser(List<String> user) {
         this.user = user;
     }
-    
+
     public void setPassword(List<String> password) {
         this.password = password;
     }
-    
+
     /**
      * Build serveral HikariDataSource.
      *
@@ -79,23 +78,27 @@ public class ExternalDataSourceProperties {
             int currentSize = index + 1;
             Preconditions.checkArgument(url.size() >= currentSize, "db.url.%s is null", index);
             DataSourcePoolProperties poolProperties = DataSourcePoolProperties.build(environment);
-            poolProperties.setDriverClassName(JDBC_DRIVER_NAME);
+
+            String jdbcDriverName = environment.getProperty("db.jdbcDriverName", "");
+            if (StringUtils.isBlank(jdbcDriverName)) {
+                poolProperties.setDriverClassName(JDBC_DRIVER_NAME);
+            } else {
+                poolProperties.setDriverClassName(jdbcDriverName);
+            }
             poolProperties.setJdbcUrl(url.get(index).trim());
             poolProperties.setUsername(getOrDefault(user, index, user.get(0)).trim());
             poolProperties.setPassword(getOrDefault(password, index, password.get(0)).trim());
             HikariDataSource ds = poolProperties.getDataSource();
             ds.setConnectionTestQuery(TEST_QUERY);
-            ds.setIdleTimeout(TimeUnit.MINUTES.toMillis(10L));
-            ds.setConnectionTimeout(TimeUnit.SECONDS.toMillis(3L));
             dataSources.add(ds);
             callback.accept(ds);
         }
         Preconditions.checkArgument(CollectionUtils.isNotEmpty(dataSources), "no datasource available");
         return dataSources;
     }
-    
+
     interface Callback<D> {
-        
+
         /**
          * Perform custom logic.
          *
